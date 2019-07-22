@@ -3,79 +3,111 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dponsonb <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: mmbatha <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/06/21 14:59:39 by dponsonb          #+#    #+#             */
-/*   Updated: 2018/06/26 13:05:17 by dponsonb         ###   ########.fr       */
+/*   Created: 2018/06/06 12:11:57 by mmbatha           #+#    #+#             */
+/*   Updated: 2018/06/28 14:17:20 by mmbatha          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
-#include "./libft/libft.h"
+#include <unistd.h>
+#include <stdlib.h>
+#include "libft/includes/get_next_line.h"
 
-static int		ft_findnl(char *tmp)
+static int		ft_buffer_saved(char *buffer, char **to_save, \
+		char **to_save_malloc)
 {
-	int				i;
+	char *new_save;
 
-	i = 0;
-	while (tmp[i] != '\0' && tmp[i] != '\n')
-		i++;
-	return (i);
+	new_save = ft_strjoin(*to_save, buffer);
+	free(*to_save_malloc);
+	*to_save = new_save;
+	*to_save_malloc = new_save;
+	return (1);
 }
 
-static char		*ft_freejoin(char *tmp, char *buf)
+static int		ft_save_buff_line(char *buffer, char **line, \
+		char **to_save, char **to_save_malloc)
 {
-	size_t			len;
-	char			*mem;
+	char *new_line;
 
-	if (!tmp || !buf)
-		return (NULL);
-	len = ((ft_strlen(tmp) + ft_strlen(buf)));
-	if (!(mem = ft_strnew(len)))
-		return (NULL);
-	mem = ft_strcat(mem, tmp);
-	free(tmp);
-	mem = ft_strcat(mem, buf);
-	return (mem);
-}
-
-static char		*ft_makeline(char **line, char *tmp, int nlpos)
-{
-	char			*str;
-
-	*line = ft_strsub(tmp, 0, nlpos);
-	if (ft_strcmp(*line, tmp) == 0)
-		tmp = NULL;
+	new_line = ft_strchr(buffer, '\n');
+	if (new_line == NULL)
+	{
+		ft_buffer_saved(buffer, to_save, to_save_malloc);
+		return (0);
+	}
 	else
 	{
-		str = tmp;
-		tmp = ft_strsub(tmp, nlpos + 1, ft_strlen(tmp + nlpos + 1));
-		free(str);
+		*new_line = '\0';
+		*line = ft_strjoin(*to_save, buffer);
+		**to_save = '\0';
+		ft_buffer_saved(new_line + 1, to_save, to_save_malloc);
+		return (1);
 	}
-	return (tmp);
+}
+
+static int		ft_save_line(int eof, char **line, char **to_save)
+{
+	char *new_line;
+
+	if (eof)
+	{
+		*line = ft_strdup(*to_save);
+		**to_save = '\0';
+		return (1);
+	}
+	new_line = ft_strchr(*to_save, '\n');
+	if (new_line == NULL)
+		return (0);
+	else
+	{
+		*new_line = '\0';
+		*line = ft_strdup(*to_save);
+		*to_save = new_line + 1;
+		return (1);
+	}
+}
+
+static int		ft_save_it_all(char **buffer, char **to_save, \
+		char **to_save_malloc)
+{
+	if (*to_save == NULL)
+	{
+		*to_save = (char *)malloc(sizeof(char));
+		*to_save_malloc = *to_save;
+		**to_save = '\0';
+	}
+	if (*buffer == NULL)
+		*buffer = (char *)malloc(sizeof(char) * (BUFF_SIZE + 1));
+	return (0);
 }
 
 int				get_next_line(const int fd, char **line)
 {
-	int				read_ret;
-	char			buf[BUFF_SIZE + 1];
-	static char		*tmp;
-	int				nlpos;
+	int			result;
+	char		*buffer;
+	char		*to_save_malloc;
+	static char *to_save = NULL;
 
-	if (fd < 0 || !line || read(fd, buf, 0) < 0)
+	buffer = NULL;
+	to_save_malloc = NULL;
+	if (fd <= -1 || line == NULL)
 		return (-1);
-	if (tmp == NULL)
-		tmp = ft_strnew(0);
-	while ((read_ret = read(fd, buf, BUFF_SIZE)) > 0)
+	ft_save_it_all(&buffer, &to_save, &to_save_malloc);
+	if (ft_save_line(0, line, &to_save))
+		return (1);
+	while ((result = read(fd, buffer, BUFF_SIZE)) > 0)
 	{
-		buf[read_ret] = '\0';
-		tmp = ft_freejoin(tmp, buf);
-		if (ft_strchr(tmp, '\n'))
-			break ;
+		buffer[result] = '\0';
+		if (ft_save_buff_line(buffer, line, &to_save, &to_save_malloc))
+			return (1);
 	}
-	if (read_ret < BUFF_SIZE && !ft_strlen(tmp))
-		return (0);
-	nlpos = ft_findnl(tmp);
-	tmp = ft_makeline(line, tmp, nlpos);
-	return (1);
+	if (result == -1)
+		return (-1);
+	ft_save_line(1, line, &to_save);
+	if (**line != '\0')
+		return (1);
+	free(to_save_malloc);
+	return (0);
 }

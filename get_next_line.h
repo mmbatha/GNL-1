@@ -3,19 +3,25 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.h                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dponsonb <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: mmbatha <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/06/22 09:42:15 by dponsonb          #+#    #+#             */
-/*   Updated: 2018/06/25 09:33:47 by dponsonb         ###   ########.fr       */
+/*   Created: 2018/06/06 12:01:49 by mmbatha           #+#    #+#             */
+/*   Updated: 2018/06/28 17:18:09 by mmbatha          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef GET_NEXT_LINE_H
 # define GET_NEXT_LINE_H
-# include <unistd.h>
+# define BUFF_SIZE 4096
+# include <stdio.h>
 
-# define BUFF_SIZE 50
-
-int		get_next_line(const int fd, char **line);
+char				*ft_strchr(const char *s, int c);
+char				*ft_strdup(const char *s);
+char				*ft_strjoin(char const *s1, char const *s2);
+size_t				ft_strlen(const char *s);
+int					get_next_line(const int fd, char **line);
+void				ft_putendl(char const *s);
+void				ft_putchar(char c);
+void				ft_putstr(const char *s);
 
 #endif
