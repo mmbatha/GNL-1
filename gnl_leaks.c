@@ -6,12 +6,14 @@
 /*   By: dponsonb <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/06/20 08:16:07 by dponsonb          #+#    #+#             */
-/*   Updated: 2019/07/22 17:02:48 by mmbatha          ###   ########.fr       */
+/*   Updated: 2019/11/11 06:18:56 by mmbatha          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "../get_next_line.h"
 #include <fcntl.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 int			main(void)
 {
